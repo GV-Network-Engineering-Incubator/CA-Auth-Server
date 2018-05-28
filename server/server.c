@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <signal.h> // SA_RESTART
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
@@ -28,7 +29,8 @@ void* get_in_adddr(struct sockaddr *sa) {
 }
 
 int main(void) {
-  int sockfd, new_fd;
+  int sockfd, new_fd, pid;
+  static int counter = 0;
   struct addrinfo hints, *servinfo, *p;
   struct sockaddr_storage connecting_addr;
   socklen_t sin_size;
@@ -87,25 +89,40 @@ int main(void) {
 
   printf("server: waiting for connections...");
 
+  // Server loop
   while(1) {
     sin_size = sizeof connecting_addr;
     new_fd = accept(sockfd, (struct sockaddr *)&connecting_addr, &sin_size);
+
     if (new_fd == -1) {
       perror("accept");
       continue;
     }
 
+    // Give s our IP address of the connecting server
     inet_ntop(connecting_addr.ss_family, get_in_adddr((struct sockaddr *)&connecting_addr), s, sizeof s);
     printf("server: got a connection from %s\n", s);
 
-    if (!fork()) {
-      close(sockfd);
-      if (send(new_fd, "Connection established", 22, 0) == -1)
-        perror("send");
+
+    if ((pid = fork()) == -1) {
       close(new_fd);
-      exit(0);
+      printf("error fork failed for %s", s);
+      continue;
+    } else if (pid > 0) {
+      close(new_fd);
+      printf("Connection received");
+      counter++;
+      continue;
+    } else if (pid == 0) {
+      char buf[100];
+      counter++;
+      snprintf(buf, sizeof buf, "Your place in the queue is: %d", counter);
+      send(new_fd, buf, strlen(buf), 0);
+      close(new_fd);
+      break;
     }
-    close(new_fd);
   }
   return 0;
 }
+
+/* openssl req -in mycsr.csr -noout -text */
