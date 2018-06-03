@@ -54,3 +54,4 @@ target/
 target/
 .idea/
 *.iml
+a.out
