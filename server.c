@@ -77,6 +77,10 @@ void* get_in_adddr(struct sockaddr *sa) {
   return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
+char* read_request(char* filename) {
+
+}
+
 int main(void) {
   int sockfd, new_fd, pid;
   static int counter = 0;
@@ -167,15 +171,34 @@ int main(void) {
       continue;
     } else if (pid == 0) {
       counter++;
-      send(new_fd, message, strlen(message), 0);
+      message = "Connection successful, attemtping to receive certificate";
+      send(new_fd, message, sizeof message, 0);
       if (recv(new_fd, client_reply, sizeof client_reply, 0) < 0) {
         puts("Receiving client data failed!");
       }
-      puts("Received client CA request, validating");
+
+      message = "Received data, validating certificate";
       system("openssl req -config openssl.conf -x509 -sha256 -nodes -extensions v3_ca -days 3650 -subj '/CN=OpenSSL CA/O=Example Company/C=SE' -newkey rsa:4096 -keyout ca.key -out ca.pem");
 
+      FILE *key = fopen("ca.key", "r");
+      char* key_text;
+      fscanf(key, "%s", key_text);
+
+      FILE *crt = fopen("ca.pem", "r");
+      char* cert_text;
+      fscanf(crt, "%s", cert_text);
+
+      if (validate_certificate(key, crt) == 1) {
+        message = "Error generating certificate, exiting";
+        send(new_fd, message, strlen(message), 0);
+        close(new_fd);
+        cleanup_client_data();
+        break;
+      }
+      message = "Certificate validated, welcome!";
+      send(new_fd, message, sizeof message, 0);
+
       close(new_fd);
-      counter--;
       cleanup_client_data();
       break;
     }
