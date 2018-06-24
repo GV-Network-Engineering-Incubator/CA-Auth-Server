@@ -13,6 +13,7 @@
 #include <sys/wait.h>
 #include <signal.h>
 #include <time.h>
+#include "auth_lib.c"
 
 #define PORT "8080"
 #define BACKLOG 15 // Number of pending connections for queue
@@ -166,11 +167,6 @@ int main(void) {
       continue;
     } else if (pid == 0) {
       counter++;
-      if (counter > 1) {
-        snprintf(message, sizeof message, "Your place in the queue is: %d, beginning validation...", counter);
-      } else {
-        snprintf(message, sizeof message, "Beginning validation of certificate request...");
-      }
       send(new_fd, message, strlen(message), 0);
       if (recv(new_fd, client_reply, sizeof client_reply, 0) < 0) {
         puts("Receiving client data failed!");
