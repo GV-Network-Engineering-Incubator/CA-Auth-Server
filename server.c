@@ -180,15 +180,7 @@ int main(void) {
       message = "Received data, validating certificate";
       system("openssl req -config openssl.conf -x509 -sha256 -nodes -extensions v3_ca -days 3650 -subj '/CN=OpenSSL CA/O=Example Company/C=SE' -newkey rsa:4096 -keyout ca.key -out ca.pem");
 
-      FILE *key = fopen("ca.key", "r");
-      char* key_text;
-      fscanf(key, "%s", key_text);
-
-      FILE *crt = fopen("ca.pem", "r");
-      char* cert_text;
-      fscanf(crt, "%s", cert_text);
-
-      if (validate_certificate(key, crt) == 1) {
+      if (validate_certificate("ca.key", "ca.pem") == 1) {
         message = "Error generating certificate, exiting";
         send(new_fd, message, strlen(message), 0);
         close(new_fd);
@@ -207,4 +199,3 @@ int main(void) {
   return 0;
 }
 
-/* openssl req -in mycsr.csr -noout -text */
