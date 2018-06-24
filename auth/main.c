@@ -70,13 +70,13 @@ int generate_set_random_serial(X509 *crt) {
 
   ASN1_INTEGER_free(serial);
   BN_free(bn);
-  return 1;  
+  return 1;
 }
 
 /**
  * Creates a new Certificate Signing Request
  * Which allows for the creation of a new
- * certificate on the CA server. 
+ * certificate on the CA server.
  *
  *
  * This will be referenced whenever the associated
@@ -85,7 +85,7 @@ int generate_set_random_serial(X509 *crt) {
  * against what is saved, and allow or deny access.
  *
  * @return int
- */ 
+ */
 int generate_key_csr(EVP_PKEY **key, X509_REQ **req) {
 	/* Allocate an empty EVP_PKEY structure inside of key */
 	*key = EVP_PKEY_new();
@@ -134,7 +134,7 @@ void initialize() {
 
 /**
  * Clean up the openssl functions.
- * 
+ *
  * @return void
  */
 void cleanup(){
@@ -142,7 +142,7 @@ void cleanup(){
 	CRYPTO_cleanup_all_ex_data();
 	ERR_free_strings();
 	ERR_remove_thread_state(NULL);
-}	
+}
 
 /**
  * This code converts an X509 cert to PEM format
@@ -155,7 +155,7 @@ void crt_to_pem(X509 *crt, uint8_t **crt_bytes, size_t *crt_size) {
 	PEM_write_bio_X509(bio, crt);
 	/* Get the size of the certification */
 	/* This functions similar to strlen */
-	*crt_size = BIO_pending(bio); 
+	*crt_size = BIO_pending(bio);
 	*crt_bytes = (uint8_t *)malloc(*crt_size + 1);
 	/* Read the cert into pem format */
 	BIO_read(bio, *crt_bytes, *crt_size);
@@ -177,7 +177,7 @@ void key_to_pem(EVP_PKEY* key, uint8_t** key_bytes, size_t* key_size) {
 	*key_bytes = (uint8_t*)malloc(*key_size + 1);
 	/* Read the data into the bio */
 	BIO_read(bio, *key_bytes, *key_size);
-	BIO_free_all(bio);	
+	BIO_free_all(bio);
 }
 
 /**
@@ -228,10 +228,10 @@ void print_bytes(uint8_t* data, size_t size) {
 int generate_signed_key_pair(EVP_PKEY *ca_key, X509 *ca_crt, EVP_PKEY **key, X509 **crt) {
 
 	/* Generate the private key and corresponding CSR */
-	X509_REQ *req = NULL;	
+	X509_REQ *req = NULL;
 	if (!generate_key_csr(key, &req)) {
 		fprintf(stderr, "Failed to generate key and/or csr!\n");
-		return 0;	
+		return 0;
 	}
 
 	/* Sign with the CA */
@@ -249,20 +249,12 @@ err:
 	return 0;
 }
 
-int main(int argc, char **argv) {
-  /* Assumes the CA certificate and CA key is given as arguments. */
-  if (argc != 3) {
-    fprintf(stderr, "usage: %s <cakey> <cacert>\n", argv[0]);
-    return 1;
-  }
-
-  char *ca_key_path = argv[1];
-  char *ca_crt_path = argv[2];
-
+int validate_certificate(char* ca_key_path, char* ca_crt_path) {
   /* Load CA key and cert. */
   initialize();
   EVP_PKEY *ca_key = NULL;
   X509 *ca_crt = NULL;
+
   if (!load_ca(ca_key_path, &ca_key, ca_crt_path, &ca_crt)) {
     fprintf(stderr, "Failed to load CA certificate and/or key!\n");
     return 1;
@@ -277,6 +269,7 @@ int main(int argc, char **argv) {
     fprintf(stderr, "Failed to generate key pair!\n");
     return 1;
   }
+
   /* Convert key and certificate to PEM format. */
   uint8_t *key_bytes = NULL;
   uint8_t *crt_bytes = NULL;
@@ -302,3 +295,4 @@ int main(int argc, char **argv) {
 
   return 0;
 }
+
