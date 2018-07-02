@@ -187,6 +187,7 @@ int main(void) {
         cleanup_client_data();
         break;
       }
+
       message = "Certificate validated, welcome!";
       send(new_fd, message, sizeof message, 0);
 
