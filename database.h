@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __DATABASE_H
+#define __DATABASE_H
 
 #include <time.h>
 
@@ -25,3 +26,4 @@ typedef struct databaseState {
   char* data_location; /* data location */
 } databaseState;
 
+#endif

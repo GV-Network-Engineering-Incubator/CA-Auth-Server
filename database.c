@@ -6,7 +6,3 @@
 #include <unistd.h>
 #include <sys/stat.h>
 
-
-void serverLog(int level, const char* message, ...) {
-
-}
