@@ -1,26 +1,24 @@
-# CA-Auth-Server
-The certificate authority validation system
+# What is Nucleus?
+Nucleus is an implementation of a domain-based certificate authority system. It provides access to a server that can validate requests and store them in its local custom database to be referenced at will. 
 
-This code does the following:
-1. First it generates a CA certificate using the openssl CLI tool, then stores the cert and key in ca.pem and ca.key respectively. This is currently done via the makefile for testing, but will shortly be added as a feature when this is made into a fully running server.
-2. In the actual code, the OpenSSL api is used to do the following:
-- Generate a private RSA key.
-- Generate a Certificate Signing Request (CSA)
-- Sign the request using the generated CA certificate.
-3. The program will then send the generated private key and signed certificate in PEM format, and it will also store it in the servers database for use with later requests.
+### This system offers the following security improvements over the other systems that you typically see in the wild:
+__No single points of failure__
+If someone were to forge a certificate to a provider like google, they would compromise all of the services that sit inside of the google authentication symbol, effectively taking control of a large portion of your life. With domain-based certificate authorities we get rid of this issue entirely.
 
 
-## Compiling
-### Requirements
-- OpenSSL
-- Python 3
-- Docker
+## Building Nucleus
+Nucleus runs on most OSX and Linux variants and right now only supports 64-bit architectures.
 
-### Instructions
-`$ cd auth/`
+You may be able to get it to compile on other systems with a bit of tweaking, but there is currently not support for that as of now.
 
+Simply run:
 `$ make`
 
-`$ ./cert ca.key ca.pem`
+## Running Nucleus
+To run this with default configurations in place (advanced config coming soon)
 
-The results should print to either stderr or stdout in the console.
+ `$ cd src`
+ 
+ `./nucleus-server`
+
+Using any http enabled client you can begin making requests for your local domain and have your traffic encrypted between you and servers within the domain as validated through this CA server.
