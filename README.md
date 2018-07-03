@@ -19,6 +19,6 @@ To run this with default configurations in place (advanced config coming soon)
 
  `$ cd src`
  
- `./nucleus-server`
+ `$ ./nucleus-server`
 
 Using any http enabled client you can begin making requests for your local domain and have your traffic encrypted between you and servers within the domain as validated through this CA server.
