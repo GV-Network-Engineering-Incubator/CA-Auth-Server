@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include "certificate.h"
+
 #include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
+#include <unistd.h>
 
 #include <openssl/crypto.h> // Crypto lib
 #include <openssl/ssl.h>
 #include <openssl/err.h>
-#include <openssl/x509v3.h> // The crypto algorithm
 #include <openssl/pem.h> // The public cert format
 #include <openssl/rand.h> // Rand
 
@@ -33,17 +33,6 @@
 #define REQ_DN_O "Grand Valley State University"
 #define REQ_DN_OU "IT"
 #define REQ_DN_CN "www.gvsu.edu"
-
-static void cleanup(void);
-static void crt_to_pem(X509 *crt, uint8_t **crt_bytes, size_t *crt_size);
-static int generate_key_csr(EVP_PKEY **key, X509_REQ **req);
-static int generate_set_random_serial(X509 *crt);
-static int generate_signed_key_pair(EVP_PKEY *ca_key, X509 *ca_crt, EVP_PKEY **key, X509 **crt);
-static void initialize(void);
-static void key_to_pem(EVP_PKEY *key, uint8_t **key_bytes, size_t *key_size);
-static int load_ca(const char *ca_key_path, EVP_PKEY **ca_key, const char *ca_crt_path, X509 **ca_crt);
-static void print_bytes(uint8_t *data, size_t size);
-
 
 /**
  * Generates a new 20-byte random serial number
@@ -240,6 +229,30 @@ int generate_signed_key_pair(EVP_PKEY *ca_key, X509 *ca_crt, EVP_PKEY **key, X50
 
 	/* Set version to X509v3 */
 	X509_set_version(*crt, 2);
+
+  /* Generate random 20 byte serial */
+  if (!generate_set_random_serial(*crt)) goto err;
+
+  /* Set isser to CA's subject */
+  X509_set_issuer_name(*crt, X509_get_subject_name(ca_crt));
+
+  /* Set validity of cert to 2 years */
+  X509_gmtime_adj(X509_get_notBefore(*crt), 0);
+  X509_gmtime_adj(X509_get_notAfter(*crt), (long)2*365*3600);
+
+  /* Get the request subject and check it */
+  X509_set_subject_name(*crt, X509_REQ_get_subject_name(req));
+
+  if (X509_get_subject_name(ca_crt) != X509_REQ_get_subject_name(req)) goto err;
+
+  EVP_PKEY *req_pubkey = X509_REQ_get_pubkey(req);
+  X509_set_pubkey(*crt, req_pubkey);
+  EVP_PKEY_free(req_pubkey);
+
+  /* Now sign it */
+  if (X509_sign(*crt, ca_key, EVP_sha256()) == 0) goto err;
+
+  X509_REQ_free(req);
 	return 1;
 
 err:
@@ -249,20 +262,25 @@ err:
 	return 0;
 }
 
-int validate_certificate(char* ca_key_path, char* ca_crt_path) {
+int validate_certificate(X509* crt, EVP_PKEY** key) {
   /* Load CA key and cert. */
   initialize();
   EVP_PKEY *ca_key = NULL;
   X509 *ca_crt = NULL;
 
+  system("openssl req -config openssl.conf -x509 -sha256 -nodes -extensions v3_ca -days 3650 -subj '/CN=OpenSSL CA/O=Example Company/C=SE' -newkey rsa:4096 -keyout ca.key -out ca.pem");
+
+  char cwd[1024];
+  getcwd(cwd, sizeof(cwd));
+  char ca_key_path[1024];
+  char ca_crt_path[1024];
+  snprintf(ca_key_path, sizeof(ca_key_path), "%s/ca.key", cwd);
+
+  /* Load the CA and Key for signing certs */
   if (!load_ca(ca_key_path, &ca_key, ca_crt_path, &ca_crt)) {
     fprintf(stderr, "Failed to load CA certificate and/or key!\n");
     return 1;
   }
-
-  /* Generate keypair and then print it byte-by-byte for demo purposes. */
-  EVP_PKEY *key = NULL;
-  X509 *crt = NULL;
 
   int ret = generate_signed_key_pair(ca_key, ca_crt, &key, &crt);
   if (!ret) {
