@@ -26,8 +26,7 @@
     "lodash": "^4.17.11",
     "moment": "^2.23.0",
     "morgan": "^1.9.1",
-    "pg": "^7.7.1",
-    "Lib.Core": "file:../../Schedulx.Lib.Core"
+    "pg": "^7.7.1"
   },
   "devDependencies": {
     "@types/body-parser": "^1.17.0",
