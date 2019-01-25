@@ -1,0 +1,15 @@
+#!/bin/bash
+
+database=""
+
+for input in "$@"
+do
+  database=$input
+done
+
+if [ -z $database ]
+then
+  database="devel_jupiter"
+fi
+
+docker exec -it ${database} /bin/bash

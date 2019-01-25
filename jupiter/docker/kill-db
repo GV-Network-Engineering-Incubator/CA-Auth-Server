@@ -1,0 +1,3 @@
+#!/bin/bash
+
+docker stop ${database} >/dev/null && docker rm ${database} >/dev/null
