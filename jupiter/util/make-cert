@@ -1,0 +1,21 @@
+#!/bin/bash
+
+function check_args() {
+  if [[ $# -lt 1 ]]; then
+    printf "usage: make-cert days config_path"
+    exit 1
+  fi
+}
+
+function make_cert() {
+  days=$1
+  config=$2
+  openssl req -new -x509 -days 9999 -config $config -keyout ../cert/ca-key.pem -out ../cert/ca-crt.pem
+}
+
+function main() {
+  check_args "$@"
+  make_cert "$@"
+}
+
+main "$@"
