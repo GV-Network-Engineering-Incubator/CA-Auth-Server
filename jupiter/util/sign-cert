@@ -1,0 +1,26 @@
+#!/bin/bash
+
+function check_args() {
+  if [[ $# -lt 7 ]]; then
+    printf "usage: sign-cert server_conf days password csr cert key output"
+    exit 1
+  fi
+}
+
+function sign_certificate() {
+  server_conf=$1
+  days=$2
+  password=$3
+  csr=$4
+  cert=$5
+  key=$6
+  output=$7
+  openssl x509 -req -extfile $server_conf -days $days -passin $password -in $csr -CA $cert -CAkey $key -CAcreateserial -out $output
+}
+
+function main() {
+  check_args "$@"
+  sign_certificate "$@"
+}
+
+main "$@"
