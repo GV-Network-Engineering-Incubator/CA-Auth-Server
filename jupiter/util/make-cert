@@ -10,7 +10,7 @@ function check_args() {
 function make_cert() {
   days=$1
   config=$2
-  openssl req -new -x509 -days 9999 -config $config -keyout ../cert/ca-key.pem -out ../cert/ca-crt.pem
+  openssl req -new -x509 -days $days -config $config -keyout ../cert/ca-key.pem -out ../cert/ca-crt.pem
 }
 
 function main() {
