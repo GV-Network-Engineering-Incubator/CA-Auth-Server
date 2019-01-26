@@ -1,0 +1,20 @@
+#!/bin/bash
+
+function check_args() {
+  if [[ $# -lt 1 ]]; then
+    printf "usage: make-csr config_path"
+    exit 1
+  fi
+}
+
+function make_csr() {
+  config=$1
+  openssl req -new -config $config -key ../cert/server-key.pem -out ../cert/server-csr.pem
+}
+
+function main() {
+  check_args "$@"
+  make_csr "$@"
+}
+
+main "$@"
