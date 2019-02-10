@@ -13,6 +13,9 @@ function main() {
     key: fs.readFileSync('../cert/server-key.pem'),
     cert: fs.readFileSync('../cert/server-crt.pem'),
     ca: fs.readFileSync('../cert/ca-crt.pem'),
+    crl: fs.readFileSync('../cert/ca-crl.pem'),
+    requestCert: true,
+    rejectUnauthorized: true,
   };
 
   const apiApp = makeApp();

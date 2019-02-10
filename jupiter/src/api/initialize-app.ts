@@ -7,10 +7,11 @@ import cors from 'cors';
 
 import makeRouter from './make-router';
 
-const customLogFormat = (tokens: any, req: Request, res: Response) => {
+const customLogFormat = (tokens: any, req: any, res: Response) => {
   const logObj = {
     app_name: `api-schedulex`,
     timestamp: tokens.date(req, res, 'clf'),
+    cert: req.socket.getPeerCertificate().subject.CN,
     request_ip: tokens['remote-addr'](req, res),
     request_user: tokens['remote-user'](req, res),
     request_method: tokens.method(req, res),
