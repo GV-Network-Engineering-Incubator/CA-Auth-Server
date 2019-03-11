@@ -1,25 +1,25 @@
 #!/usr/bin/env node
 
 require('ts-node/register');
-const http = require('http');
 const fs = require('fs');
 const makeApp = require('../src/api/make-app').default;
 const initializeApi = require('../src/api/initialize-app').default;
 const package = require('../package.json')
 const { NODE_PORT } = require('../src/config');
+const https = require('https');
 
 function main() {
   const options = {
-    key: fs.readFileSync('../cert/server-key.pem'),
-    cert: fs.readFileSync('../cert/server-crt.pem'),
-    ca: fs.readFileSync('../cert/ca-crt.pem'),
-    crl: fs.readFileSync('../cert/ca-crl.pem'),
+    key: fs.readFileSync('./cert/server-key.pem'),
+    cert: fs.readFileSync('./cert/server-crt.pem'),
+    ca: fs.readFileSync('./cert/ca-crt.pem'),
+    crl: fs.readFileSync('./cert/ca-crl.pem'),
     requestCert: true,
     rejectUnauthorized: true,
   };
 
   const apiApp = makeApp();
-  const apiServer = http.createServer(options, apiApp);
+  const apiServer = https.createServer(options, apiApp);
 
 
   initializeApi(apiApp);
