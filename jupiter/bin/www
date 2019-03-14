@@ -24,6 +24,7 @@ function main() {
 
   initializeApi(apiApp);
 
+  apiServer.timeout = '1000';
   apiServer.on('error', console.error);
   apiServer.on('listening', () => console.log(`${package.name} ${package.version} listening on 127.0.0.1:${NODE_PORT}`));
   apiServer.listen(NODE_PORT);
